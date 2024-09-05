@@ -36,10 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $botUsername = 'Mr.Rock';
     $timestamp = date('g:i A');
     $username = $_SESSION['username'];
-
+    
     if (isset($_POST['message']) && !empty(trim($_POST['message']))) {
         $message = trim($_POST['message']);
-        if ($message === '/clear' && $username === 'admin') {
+        
+        if ($message === '!clear' && $username === 'admin') {
             $chatLogsFile = 'secret/logs/chatlogs.txt';
             $uploadsDir = 'secret/logs/uploads/';
             
@@ -51,9 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 unlink($file);
             }
 
-            $log_entry = "Mr.Rock: Chat cleared by $username" . PHP_EOL;
+            $log_entry = "$botUsername: Chat cleared by $username" . PHP_EOL;
             file_put_contents($chatLogsFile, $log_entry, FILE_APPEND);
-        } elseif ($message === '/bot') {
+        } elseif (strpos($message, '!botchat') === 0 && $username === 'admin') {
+            $botMessage = trim(str_replace('!botchat', '', $message));
+            
+            if (!empty($botMessage)) {
+                $log_entry = "$timestamp - $botUsername: $botMessage" . PHP_EOL;
+                file_put_contents('secret/logs/chatlogs.txt', $log_entry, FILE_APPEND);
+            }
+        } elseif ($message === '!bot') {
             $botResponse = "$timestamp - $botUsername: Hi, I'm $botUsername, the website bot!" . PHP_EOL;
             file_put_contents('secret/logs/chatlogs.txt', $botResponse, FILE_APPEND);
         } else {
@@ -76,14 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $log_entry = "$timestamp - $username: <img src='$upload_file' alt='Image' style='width:auto; max-height:100px;'>" . PHP_EOL;
                         file_put_contents('secret/logs/chatlogs.txt', $log_entry, FILE_APPEND);
                     } else {
-                        echo "Sorry, there was an error uploading your file.";
+                        echo "Unknown Error.";
                     }
                     
                 } else {
-                    echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+                    echo "JPG, JPEG, PNG & GIF files are allowed.";
                 }
             } else {
-                echo "Sorry, your file is too large.";
+                echo "Large file.";
             }
         } else {
             echo "File is not an image.";
@@ -99,9 +107,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>The Place</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            messageInput.focus();
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === '/') {
+                event.preventDefault();
+                messageInput.focus();
+            }
+        });
+        </script>
     <style>
         body {
-            background-color: #2b2121;
+            background-color: #2a3032;
             font-family: Arial, sans-serif;
         }
         .chat-box {
@@ -109,9 +129,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             max-width: 1200px;
             margin: 0 auto;
             border-radius: 5px;
-            background-color: #212121;
-            color: white;
-            border: 1px solid #ddd;
+            background-color: #f7f3c4;
+            color: #b49c6a;
+            border: 1px solid #4f2f1f;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
