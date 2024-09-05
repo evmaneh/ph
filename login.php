@@ -5,7 +5,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // Validate username and password
     if (empty($username) || empty($password)) {
         echo "All fields are required.";
         exit;
@@ -39,10 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         body {
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Aligns the form to the left */
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding-left: 20%; /* Increased padding to move the form to the right */
+            padding-left: 20%;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
         }
@@ -54,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         form {
             background-color: #ffffff;
             padding: 20px;
-            border-radius: 15px; /* Curved edges */
-            border: 1px solid #cccccc; /* Border around the form */
+            border-radius: 15px;
+            border: 1px solid #cccccc;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            max-width: 300px; /* Adjust the width as needed */
+            max-width: 300px;
             width: 100%;
         }
 
@@ -68,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         input[type="text"],
         input[type="password"] {
-            width: calc(100% - 10px); /* Adjusts width to be 100% minus padding */
+            width: calc(100% - 10px);
             padding: 8px;
             margin-bottom: 15px;
             border: 1px solid #cccccc;
