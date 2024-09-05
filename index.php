@@ -14,7 +14,7 @@ if (!isset($_SESSION['username'])) {
     <title>Welcome</title>
 </head>
 <body>
-    <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+    <h2>Welcome to The Place, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
     <a href="chat.php">Join Chat</a>
     <p>You are logged in.</p>
     <a href="logout.php">Logout</a>
