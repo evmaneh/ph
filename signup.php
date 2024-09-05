@@ -1,12 +1,11 @@
 <?php
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['signup'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
     $confirm_password = trim($_POST['confirm_password']);
 
-    // Validate username
     if (empty($username)) {
         echo "Username is required.";
         exit;
@@ -20,23 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Validate password
     if (empty($password)) {
         echo "Password is required.";
         exit;
     }
-    if (strlen($password) < 8) {
-        echo "Password must be at least 8 characters long.";
+    if (strlen($password) < 6) {
+        echo "Password must be at least 6 characters long.";
         exit;
     }
 
-    // Validate confirm password
     if ($password !== $confirm_password) {
-        echo "Passwords do not match.";
+        echo "Info does not match.";
         exit;
     }
 
-    // Check if username already exists
     $users = file_get_contents('secret/logs/users.txt');
     $users_array = explode(PHP_EOL, $users);
 
@@ -48,12 +44,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Hash password and store user
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     file_put_contents('secret/logs/users.txt', $username . ':' . $hashed_password . PHP_EOL, FILE_APPEND);
     $_SESSION['username'] = $username;
     header('Location: index.php');
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
+    $username = trim($_POST['login_username']);
+    $password = trim($_POST['login_password']);
+
+    if (empty($username) || empty($password)) {
+        echo "Username and password required.";
+        exit;
+    }
+
+    $users = file_get_contents('secret/logs/users.txt');
+    $users_array = explode(PHP_EOL, $users);
+
+    foreach ($users_array as $user) {
+        $user_details = explode(":", $user);
+        if ($user_details[0] === $username && password_verify($password, $user_details[1])) {
+            $_SESSION['username'] = $username;
+            header('Location: index.php');
+            exit;
+        }
+    }
+    echo "Invalid username or password.";
 }
 ?>
 
@@ -61,30 +79,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sign Up</title>
+    <title>Create acc</title>
     <style>
         body {
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Aligns the form to the left */
+            justify-content: center;
             min-height: 100vh;
             margin: 0;
-            padding-left: 20%;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
         }
 
-        h2 {
-            margin-bottom: 20px;
+        .container {
+            display: flex;
+            justify-content: space-between;
+            gap: 50px;
         }
 
         form {
             background-color: #ffffff;
             padding: 20px;
-            border-radius: 15px; /* Curved edges */
-            border: 1px solid #cccccc; /* Border around the form */
+            border-radius: 15px;
+            border: 1px solid #cccccc;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            max-width: 300px; /* Adjust the width as needed */
+            max-width: 300px;
             width: 100%;
         }
 
@@ -95,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         input[type="text"],
         input[type="password"] {
-            width: calc(100% - 10px); /* Adjusts width to be 100% minus padding */
+            width: calc(100% - 10px);
             padding: 8px;
             margin-bottom: 15px;
             border: 1px solid #cccccc;
@@ -131,16 +150,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <form method="POST" action="signup.php">
-        <h2>Sign Up</h2>
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required><br>
-        <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password" id="confirm_password" required><br>
-        <input type="submit" value="Sign Up">
-        <p>Already have an account? <a href="login.php">Login here</a></p>
-    </form>
+    <div class="container">
+        <form method="POST" action="">
+            <h2>Sign Up</h2>
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" required><br>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required><br>
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" name="confirm_password" id="confirm_password" required><br>
+            <input type="submit" name="signup" value="Sign Up">
+            <p>Already have an account? <a href="#">Login here</a></p>
+        </form>
+
+        <form method="POST" action="">
+            <h2>The Place.</h2>
+            <p>The Place is an online chatroom dedicated to online expression, making friends etc. The main inspiration/theme for The Place comes from shedtwt, a selfharm and eating disorder twitter space that shares info images etc.</p>
+            <p>Please treat everyone here with respect, and reason. Do that and you should love it here! (I hope)</p>
+            <h3>Why did I want to make this?</h3>
+            <p>I want this website to be known as a safe space for anyone, yet not restricting users with too many rules.</p>
+            <p><a href="privacy.php">Privacy Policy</a></p>
+        </form>
+    </div>
 </body>
 </html>
