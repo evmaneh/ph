@@ -11,7 +11,11 @@ function update_user_count() {
     $session_expiration = 300; 
 
     $sessions = @file_get_contents($session_file);
-    $sessions = $sessions ? unserialize($sessions) : [];
+    $sessions = $sessions !== false ? @unserialize($sessions) : [];
+
+    if ($sessions === false) {
+        $sessions = [];
+    }
 
     $sessions[session_id()] = time();
 
@@ -29,14 +33,27 @@ function update_user_count() {
 $online_users = update_user_count();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $botUsername = 'TalkingRock';
+    $botUsername = 'Mr.Rock';
     $timestamp = date('g:i A');
     $username = $_SESSION['username'];
 
-    // Handle text message
     if (isset($_POST['message']) && !empty(trim($_POST['message']))) {
         $message = trim($_POST['message']);
-        if ($message === '/bot') {
+        if ($message === '/clear' && $username === 'admin') {
+            $chatLogsFile = 'secret/logs/chatlogs.txt';
+            $uploadsDir = 'secret/logs/uploads/';
+            
+            if (file_exists($chatLogsFile)) {
+                file_put_contents($chatLogsFile, '');
+            }
+
+            foreach (glob($uploadsDir . '*') as $file) {
+                unlink($file);
+            }
+
+            $log_entry = "Mr.Rock: Chat cleared by $username" . PHP_EOL;
+            file_put_contents($chatLogsFile, $log_entry, FILE_APPEND);
+        } elseif ($message === '/bot') {
             $botResponse = "$timestamp - $botUsername: Hi, I'm $botUsername, the website bot!" . PHP_EOL;
             file_put_contents('secret/logs/chatlogs.txt', $botResponse, FILE_APPEND);
         } else {
@@ -45,22 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Handle image upload
     if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
         $upload_dir = 'secret/logs/uploads/';
         $upload_file = $upload_dir . basename($_FILES['image']['name']);
         $imageFileType = strtolower(pathinfo($upload_file, PATHINFO_EXTENSION));
 
-        // Check if the file is an actual image
         $check = getimagesize($_FILES['image']['tmp_name']);
         if ($check !== false) {
-            // Check file size (5MB limit)
             if ($_FILES['image']['size'] <= 5000000) {
-                // Allow certain file formats
                 $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
                 if (in_array($imageFileType, $allowed_extensions)) {
                     if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_file)) {
-                        // Log the image as an HTML img tag
                         $log_entry = "$timestamp - $username: <img src='$upload_file' alt='Image' style='width:auto; max-height:100px;'>" . PHP_EOL;
                         file_put_contents('secret/logs/chatlogs.txt', $log_entry, FILE_APPEND);
                     } else {
@@ -86,16 +98,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chat Room</title>
+    <title>The Place</title>
     <style>
         body {
+            background-color: #2b2121;
             font-family: Arial, sans-serif;
         }
         .chat-box {
             width: 100%;
-            max-width: 600px;
+            max-width: 1200px;
             margin: 0 auto;
-            background-color: #f9f9f9;
+            border-radius: 5px;
+            background-color: #212121;
+            color: white;
             border: 1px solid #ddd;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -104,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             height: 300px;
             overflow-y: scroll;
             border: 1px solid #ccc;
+            border-radius: 15px;
             padding: 10px;
             background-color: #fff;
             margin-bottom: 10px;
@@ -147,16 +163,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="chat-box">
-        <h2>Welcome to the Chat Room, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+        <h2>Welcome to The Place, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
 
         <div class="chat-log" id="chatLog">
-            <!-- Chat messages will be loaded here via AJAX -->
         </div>
 
         <form class="chat-input" method="POST" action="chat.php" enctype="multipart/form-data">
-            <input type="text" name="message" id="messageInput" placeholder="Type your message..." autocomplete="off">
             <input type="file" name="image" accept="image/*">
-            <button type="submit">Send</button>
+            <input type="text" name="message" id="messageInput" placeholder="Type your message..." autocomplete="off">
         </form>
     </div>
 
