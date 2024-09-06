@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
             <label for="confirm_password">Confirm Password:</label>
             <input type="password" name="confirm_password" id="confirm_password" required><br>
             <input type="submit" name="signup" value="Sign Up">
-            <p>Already have an account? <a href="#">Login here</a></p>
+            <p>Already have an account? <a href="login.php">Login here</a></p>
         </form>
 
         <form method="POST" action="">
