@@ -6,9 +6,14 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
+$username = $_SESSION['username'];
+
+$banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/banned_users.txt', FILE_IGNORE_NEW_LINES) : [];
+$is_banned = in_array($username, $banned_users);
+
 function update_user_count() {
-    $session_file = 'secret/logs/users.txt';
-    $session_expiration = 300; 
+    $session_file = 'secret/logs/session_users.txt';
+    $session_expiration = 300;
 
     $sessions = @file_get_contents($session_file);
     $sessions = $sessions !== false ? @unserialize($sessions) : [];
@@ -32,11 +37,10 @@ function update_user_count() {
 
 $online_users = update_user_count();
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
     $botUsername = 'Mr.Rock';
     $timestamp = date('g:i A');
-    $username = $_SESSION['username'];
-    
+
     if (isset($_POST['message']) && !empty(trim($_POST['message']))) {
         $message = trim($_POST['message']);
         
@@ -86,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     } else {
                         echo "Unknown Error.";
                     }
-                    
                 } else {
                     echo "JPG, JPEG, PNG & GIF files are allowed.";
                 }
@@ -118,7 +121,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 messageInput.focus();
             }
         });
-        </script>
+
+        function checkBanStatus() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'check_ban_status.php', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    if (xhr.responseText === 'banned') {
+                        window.location.reload();
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        setInterval(checkBanStatus, 5000);
+    </script>
     <style>
         body {
             background-color: #2a3032;
@@ -150,6 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .chat-input {
             display: flex;
             flex-direction: column;
+            <?php if ($is_banned) echo 'display: none;'; ?> /* Hide input form if banned */
         }
         .chat-input input[type="text"] {
             flex-grow: 1;
@@ -188,10 +207,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="chat-log" id="chatLog">
         </div>
 
-        <form class="chat-input" method="POST" action="chat.php" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*">
-            <input type="text" name="message" id="messageInput" placeholder="Type your message..." autocomplete="off">
-        </form>
+        <?php if ($is_banned): ?>
+            <p>You are banned from sending messages.</p>
+        <?php else: ?>
+            <form class="chat-input" method="POST" action="chat.php" enctype="multipart/form-data">
+                <input type="file" name="image" accept="image/*">
+                <input type="text" name="message" id="messageInput" placeholder="Type your message..." autocomplete="off">
+            </form>
+        <?php endif; ?>
     </div>
 
     <div class="user-count">
@@ -222,23 +245,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             var scrollHeight = chatLog.scrollHeight;
             var clientHeight = chatLog.clientHeight;
 
-            if (scrollTop + clientHeight >= scrollHeight - 5) {
-                userIsScrolling = false;
-            } else {
+            if (scrollTop + clientHeight < scrollHeight) {
                 userIsScrolling = true;
+            } else {
+                userIsScrolling = false;
             }
         });
 
         setInterval(loadChatLog, 1000);
-
-        loadChatLog();
-
-        document.getElementById('messageInput').addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                this.form.submit();
-            }
-        });
     </script>
 </body>
 </html>
