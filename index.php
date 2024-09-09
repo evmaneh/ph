@@ -5,6 +5,9 @@ if (!isset($_SESSION['username'])) {
     header('Location: login.php');
     exit;
 }
+
+header('Location: place.php');
+exit;
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +18,7 @@ if (!isset($_SESSION['username'])) {
 </head>
 <body>
     <h2>Welcome to The Place, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
-    <a href="chat.php">Join Chat</a>
+    <a href="place.php">If you aren't redirected, click here.</a>
     <p>You are logged in.</p>
     <a href="logout.php">Logout</a>
 </body>
