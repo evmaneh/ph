@@ -9,12 +9,12 @@ if (!isset($_SESSION['username'])) {
 
 // Only allow the 'admin' user
 if ($_SESSION['username'] !== 'admin') {
-    header('Location: chat.php');
+    header('Location: place.php');
     exit;
 }
 
 // Handle toggling user bans
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['toggle'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['toggle']) && isset($_POST['toggle_action'])) {
     $username = $_POST['username'];
     $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/banned_users.txt', FILE_IGNORE_NEW_LINES) : [];
 
@@ -33,13 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['toggle'])) {
 $users = file('secret/logs/users.txt', FILE_IGNORE_NEW_LINES);
 $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/banned_users.txt', FILE_IGNORE_NEW_LINES) : [];
 
+// Load feedback entries
+$feedback_entries = file_exists('secret/logs/feedback.txt') ? file('secret/logs/feedback.txt', FILE_IGNORE_NEW_LINES) : [];
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Page</title>
+    <title>Admin Panel</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,7 +56,7 @@ $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
         }
         h1 {
@@ -64,6 +65,7 @@ $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         table, th, td {
             border: 1px solid #ddd;
@@ -83,13 +85,21 @@ $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/
         .toggle-on {
             background-color: #4CAF50;
         }
+        .feedback-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
 
 <div class="admin-container">
-    <h1>Welcome, Admin!</h1>
-    <p>Manage user permissions:</p>
+    <h1>Admin Panel</h1>
+    <p>Logged in as <?php echo htmlspecialchars($_SESSION['username']); ?></p>
     <form method="POST">
         <table>
             <thead>
@@ -113,12 +123,26 @@ $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/
                             <?php echo $is_banned ? 'Unmute' : 'Mute'; ?>
                         </button>
                         <input type="hidden" name="username" value="<?php echo htmlspecialchars($username); ?>">
+                        <input type="hidden" name="toggle_action" value="1">
                     </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </form>
+
+    <h2>Feedback Entries:</h2>
+    <div class="feedback-list">
+        <?php if (!empty($feedback_entries)): ?>
+            <ul>
+                <?php foreach ($feedback_entries as $entry): ?>
+                    <li><?php echo htmlspecialchars($entry); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>No feedback entries available.</p>
+        <?php endif; ?>
+    </div>
 </div>
 
 </body>
