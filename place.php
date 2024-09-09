@@ -7,7 +7,6 @@ if (!isset($_SESSION['username'])) {
 }
 
 $username = $_SESSION['username'];
-
 $banned_users = file_exists('secret/logs/banned_users.txt') ? file('secret/logs/banned_users.txt', FILE_IGNORE_NEW_LINES) : [];
 $is_banned = in_array($username, $banned_users);
 
@@ -44,7 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
     if (isset($_POST['message']) && !empty(trim($_POST['message']))) {
         $message = trim($_POST['message']);
         
-        if ($message === '!clear' && $username === 'admin') {
+        if (strpos($message, '!feedback') === 0) {
+            $feedback = trim(str_replace('!feedback', '', $message));
+            if (!empty($feedback)) {
+                $feedback_entry = "$timestamp - $username: $feedback" . PHP_EOL;
+                file_put_contents('secret/logs/feedback.txt', $feedback_entry, FILE_APPEND);
+            }
+        } elseif ($message === '!clear' && $username === 'admin') {
             $chatLogsFile = 'secret/logs/chatlogs.txt';
             $uploadsDir = 'secret/logs/uploads/';
             
@@ -101,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
         }
     }
 
-    header('Location: chat.php');
+    header('Location: place.php');
     exit;
 }
 ?>
@@ -143,10 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
             font-family: Arial, sans-serif;
         }
         .chat-box {
-            width: 100%;
+            width: 70%;
             max-width: 1200px;
             margin: 0 auto;
-            border-radius: 5px;
+            border-radius: 40px;
             background-color: #f7f3c4;
             color: #b49c6a;
             border: 1px solid #4f2f1f;
@@ -159,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
             border: 1px solid #ccc;
             border-radius: 15px;
             padding: 10px;
-            background-color: #fff;
+            background-color: #1c2021;
             margin-bottom: 10px;
         }
         .chat-log p {
@@ -168,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
         .chat-input {
             display: flex;
             flex-direction: column;
-            <?php if ($is_banned) echo 'display: none;'; ?> /* Hide input form if banned */
+            <?php if ($is_banned) echo 'display: none;'; ?>
         }
         .chat-input input[type="text"] {
             flex-grow: 1;
@@ -190,12 +195,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
         }
         .user-count {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
+            bottom: 90%;
+            right: 15%;
             background-color: #000;
             color: #fff;
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 14px;
         }
     </style>
@@ -203,14 +208,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
 <body>
     <div class="chat-box">
         <h2>Welcome to The Place, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+        <a href="logout.php">Logout</a>
 
         <div class="chat-log" id="chatLog">
         </div>
 
         <?php if ($is_banned): ?>
-            <p>You are banned from sending messages.</p>
+            <p>You have been banned from sending messages.</p>
         <?php else: ?>
-            <form class="chat-input" method="POST" action="chat.php" enctype="multipart/form-data">
+            <form class="chat-input" method="POST" action="place.php" enctype="multipart/form-data">
                 <input type="file" name="image" accept="image/*">
                 <input type="text" name="message" id="messageInput" placeholder="Type your message..." autocomplete="off">
             </form>
@@ -227,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
 
         function loadChatLog() {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'load_chat.php', true);
+            xhr.open('GET', 'load_place.php', true);
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     chatLog.innerHTML = xhr.responseText;
@@ -252,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$is_banned) {
             }
         });
 
-        setInterval(loadChatLog, 1000);
+        setInterval(loadChatLog, 100);
     </script>
 </body>
 </html>
