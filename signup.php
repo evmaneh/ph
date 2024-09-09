@@ -1,6 +1,17 @@
 <?php
 session_start();
 
+$banned_words = array('admin', 'root', 'password', 'owner', 'mod', 'spam', 'admin');
+
+function contains_banned_words($username, $banned_words) {
+    foreach ($banned_words as $word) {
+        if (stripos($username, $word) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['signup'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
@@ -18,6 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['signup'])) {
         echo "Username can only contain letters, numbers, and underscores.";
         exit;
     }
+    if (contains_banned_words($username, $banned_words)) {
+        echo "Username contains banned words.";
+        exit;
+    }
 
     if (empty($password)) {
         echo "Password is required.";
@@ -29,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['signup'])) {
     }
 
     if ($password !== $confirm_password) {
-        echo "Info does not match.";
+        echo "Passwords do not match.";
         exit;
     }
 
@@ -88,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
             min-height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #2a3032;
         }
 
         .container {
@@ -98,10 +113,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         }
 
         form {
-            background-color: #ffffff;
+            background-color: #f7f3c4;
+            color: #b49c6a;
             padding: 20px;
             border-radius: 15px;
-            border: 1px solid #cccccc;
+            border: 1px solid #4f2f1f;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             max-width: 300px;
             width: 100%;
@@ -124,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         input[type="submit"] {
             width: 100%;
             padding: 10px;
-            background-color: #4CAF50;
+            background-color: #b49c6a;
             color: #ffffff;
             border: none;
             border-radius: 5px;
@@ -132,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         }
 
         input[type="submit"]:hover {
-            background-color: #45a049;
+            background-color: #4f2f1f;
         }
 
         p {
@@ -140,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         }
 
         a {
-            color: #4CAF50;
+            color: #968259;
             text-decoration: none;
         }
 
